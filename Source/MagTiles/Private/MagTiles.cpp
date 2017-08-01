@@ -4,23 +4,27 @@
 #include "Modules/ModuleManager.h"
 #include "IMagTiles.h"
 
-
-
+DEFINE_LOG_CATEGORY(MagTiles);
 
 class FMagTiles : public IMagTiles
 {
 	/** IModuleInterface implementation */
 	virtual void StartupModule() override;
 	virtual void ShutdownModule() override;
+
+	bool IsThisNumber42(int32 num);
 };
 
 IMPLEMENT_MODULE( FMagTiles, MagTiles )
 
-
-
 void FMagTiles::StartupModule()
 {
 	// This code will execute after your module is loaded into memory (but after global variables are initialized, of course.)
+	if (IMagTiles::IsAvailable())
+	{
+		UE_LOG(MagTiles, Log, TEXT("%s"), IMagTiles::Get().IsThisNumber42(42) ? TEXT("True") : TEXT("False"));
+		UE_LOG(MagTiles, Log, TEXT("%s"), IMagTiles::Get().IsThisNumber42(12) ? TEXT("True") : TEXT("False"));
+	}
 }
 
 
@@ -30,5 +34,9 @@ void FMagTiles::ShutdownModule()
 	// we call this function before unloading the module.
 }
 
+bool FMagTiles::IsThisNumber42(int32 num)
+{
+	return num == 42;
+}
 
 

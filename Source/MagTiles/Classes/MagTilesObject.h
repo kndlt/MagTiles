@@ -7,7 +7,6 @@
 #include "UObject/Object.h"
 #include "MagTilesObject.generated.h"
 
-
 /**
  * Example UStruct declared in a plugin module
  */
