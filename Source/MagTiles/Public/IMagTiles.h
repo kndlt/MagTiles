@@ -23,7 +23,7 @@ public:
 	 */
 	static inline IMagTiles& Get()
 	{
-		return FModuleManager::LoadModuleChecked< IMagTiles >( "UObjectPlugin" );
+		return FModuleManager::LoadModuleChecked< IMagTiles >( "MagTiles" );
 	}
 
 	/**
@@ -33,7 +33,7 @@ public:
 	 */
 	static inline bool IsAvailable()
 	{
-		return FModuleManager::Get().IsModuleLoaded( "UObjectPlugin" );
+		return FModuleManager::Get().IsModuleLoaded( "MagTiles" );
 	}
 };
 
