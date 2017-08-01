@@ -6,6 +6,7 @@
 #include "Modules/ModuleInterface.h"
 #include "Modules/ModuleManager.h"
 
+DECLARE_LOG_CATEGORY_EXTERN(MagTiles, Log, All);
 
 /**
  * The public interface to this module
@@ -35,5 +36,7 @@ public:
 	{
 		return FModuleManager::Get().IsModuleLoaded( "MagTiles" );
 	}
+
+	virtual bool IsThisNumber42(int32 num) = 0;
 };
 
