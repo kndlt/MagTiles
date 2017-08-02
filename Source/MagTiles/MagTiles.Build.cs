@@ -14,18 +14,18 @@ namespace UnrealBuildTool.Rules
 
 			PrivateIncludePaths.AddRange(
 				new string[] {
-					"Developer/MagTiles/Private",
-					// ... add other private include paths required here ...
+                    "Developer/MagTiles/Private",
+                    // ... add other private include paths required here ...
 				}
 			);
 
 			PublicDependencyModuleNames.AddRange(
 				new string[]
 				{
-					"Core",
-					"CoreUObject",
-					// ... add other public dependencies that you statically link with here ...
-				}
+                    "Core", "CoreUObject", // Core includes
+                    "ShaderCore", "RenderCore", "RHI", "RuntimeMeshComponent", // For RMC
+                    "Engine" // For things like actor component
+                }
 			);
 
 			PrivateDependencyModuleNames.AddRange(

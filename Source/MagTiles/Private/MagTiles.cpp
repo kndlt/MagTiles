@@ -1,5 +1,6 @@
 // Copyright 1998-2017 Epic Games, Inc. All Rights Reserved.
 
+#include "MagTiles.h"
 #include "CoreMinimal.h"
 #include "Modules/ModuleManager.h"
 #include "IMagTiles.h"
