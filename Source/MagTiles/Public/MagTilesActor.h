@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
+#include "MagTilesActorComponent.h"
 #include "MagTilesActor.generated.h"
 
 UCLASS()
@@ -16,6 +17,10 @@ public:
 	AMagTilesActor();
 
 protected:
+
+    UPROPERTY(VisibleAnywhere)
+    UMagTilesActorComponent* MagTilesActorComponent;
+
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 
