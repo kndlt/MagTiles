@@ -7,8 +7,8 @@
 // Sets default values
 AMagTilesActor::AMagTilesActor()
 {
- 	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
-	PrimaryActorTick.bCanEverTick = true;
+    // Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
+    PrimaryActorTick.bCanEverTick = true;
 
     MagTilesActorComponent = CreateDefaultSubobject<UMagTilesActorComponent>(FName("MagTilesActorComponent"));
 }
@@ -16,14 +16,14 @@ AMagTilesActor::AMagTilesActor()
 // Called when the game starts or when spawned
 void AMagTilesActor::BeginPlay()
 {
-	Super::BeginPlay();
-	
+    Super::BeginPlay();
+    
 }
 
 // Called every frame
 void AMagTilesActor::Tick(float DeltaTime)
 {
-	Super::Tick(DeltaTime);
+    Super::Tick(DeltaTime);
 
 }
 

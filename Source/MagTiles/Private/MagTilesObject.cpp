@@ -5,6 +5,6 @@
 
 
 UMagTilesObject::UMagTilesObject( const FObjectInitializer& ObjectInitializer )
-	: Super( ObjectInitializer )
+    : Super( ObjectInitializer )
 {
 }
