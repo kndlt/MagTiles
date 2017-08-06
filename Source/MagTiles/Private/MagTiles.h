@@ -10,5 +10,6 @@
 #include "Modules/ModuleManager.h"
 #include "RuntimeMeshComponent.h"
 #include "RuntimeMeshComponentPlugin.h"
+#include "RuntimeMeshLibrary.h"
 //#include "PhysicsEngine/BodySetup.h"
 
