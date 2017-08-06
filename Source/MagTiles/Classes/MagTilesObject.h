@@ -13,10 +13,10 @@
 USTRUCT()
 struct FMagTilesStruct
 {
-	GENERATED_USTRUCT_BODY()
+    GENERATED_USTRUCT_BODY()
  
-	UPROPERTY()
-	FString TestString;
+    UPROPERTY()
+    FString TestString;
 };
  
 
@@ -26,14 +26,14 @@ struct FMagTilesStruct
 UCLASS()
 class UMagTilesObject : public UObject
 {
-	GENERATED_UCLASS_BODY()
+    GENERATED_UCLASS_BODY()
 
 public:
 
 private:
 
-	UPROPERTY()
-	FMagTilesStruct MyStruct;
+    UPROPERTY()
+    FMagTilesStruct MyStruct;
 
 };
 
