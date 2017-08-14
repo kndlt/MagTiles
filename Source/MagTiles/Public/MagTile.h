@@ -55,28 +55,34 @@ private:
 /**
  * Tile index location
  */
-struct MAGTILES_API FMagTileLocation
-{
-    const int64 i, j;
-};
+//struct MAGTILES_API FMagTileLocation
+//{
+//    const int64 i, j;
+//};
 
 /**
  * Linked list node for MagTiles
  */
-struct MAGTILES_API FMagTileNode
-{
-    const AMagTile* value;
-    const FMagTileNode* next;
-};
+//struct MAGTILES_API FMagTileNode
+//{
+//    const AMagTile* value;
+//    const FMagTileNode* next;
+//};
 
 /**
  * Tile groups
  */
 class MAGTILES_API FMagTileGroup
 {
+    // Vector of tiles
+    TArray<AMagTile> Tiles;
     // TMap<FMagTileLocation, FMagTileNode> Registrations;
 
-// public:
+public:
+    
+    FMagTileGroup();
+    
+    ~FMagTileGroup();
     
     // static FRuntimeMeshVertexTypeRegistrationContainer& GetInstance();
     
@@ -94,11 +100,16 @@ class MAGTILES_API FMagTileGroup
 class MAGTILES_API FMagTileCore
 {
     
+    // Parent ID -> group
+    TMap<FString, FMagTileGroup> MagTileGroups;
+    
 public:
     
     static FMagTileCore& GetInstance();
     
-    // TMap<FGuid, FMagTileGroup> MagTileGroups;
+    FMagTileCore();
+    
+    FMagTileGroup& GetTileGroup(FString Key);
     
     // Automatically called when a new MagTile (first out of all siblings)
     // is registered.

@@ -50,10 +50,14 @@ void AMagTile::OnConstruction(const FTransform& Transform)
 {
     CreateTileMesh(200);
     
-    // @TODO create shared registry
+    //FMagTileCore MagTileCore = FMagTileCore::GetInstance();
+    
+    // @TODO Get the name of parent
+    //FString GroupKey = "**PARENT**";
+    
+    //FMagTileGroup MagTileGroup = MagTileCore.GetTileGroup(GroupKey);
     
 }
-
 
 void AMagTile::CreateTileMesh(float SideLength)
 {
@@ -97,9 +101,37 @@ void AMagTile::CreateTileMesh(float SideLength)
     RuntimeMesh->CreateMeshSection(0, Vertices, Triangles, Normals, TextureCoordinates, TArray<FColor>(), Tangents, true, EUpdateFrequency::Infrequent);
 }
 
+FMagTileGroup::FMagTileGroup()
+{
+    GLog->Log("MagTiles: Created a new group.");
+}
+
+FMagTileGroup::~FMagTileGroup()
+{
+    GLog->Log("MagTiles: Removed a group.");
+}
+
+FMagTileCore::FMagTileCore() {
+    GLog->Log("MagTiles: Core initialized.");
+}
+
 FMagTileCore& FMagTileCore::GetInstance()
 {
     static FMagTileCore Instance;
     return Instance;
 }
 
+FMagTileGroup& FMagTileCore::GetTileGroup(FString Key)
+{
+    // return *(new FMagTileGroup());
+    FMagTileGroup* MagTileGroup = MagTileGroups.Find(Key);
+    if (MagTileGroup == nullptr)
+    {
+        MagTileGroup = new FMagTileGroup();
+        
+        // @TODO Fix error on this line MemoryOps
+        // MagTileGroups.Add(Key, *MagTileGroup);
+    }
+    return *MagTileGroup;
+    //return *(new FMagTileGroup());
+}
