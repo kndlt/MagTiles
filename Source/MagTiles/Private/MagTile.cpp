@@ -4,16 +4,33 @@
 #include "MagTile.h"
 
 
-// Sets default values
+
 AMagTile::AMagTile()
 {
-     // Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
+    // Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
     PrimaryActorTick.bCanEverTick = true;
 
     // Init RMC
     RuntimeMesh = CreateDefaultSubobject<URuntimeMeshComponent>(TEXT("Runtime Mesh"));
     RootComponent = RuntimeMesh;
+    
+    // V1 One Group
+    // Who is going to define the grid?
+    // Each tile belongs to a group
+    // with same grid size and same grid offset (epsilon testing)
+    // @TODO MagTileGroups
+    //     FRuntimeMeshVertexTypeRegistrationContainer::GetInstance().Register(&VertexType::TypeInfo);
+    
 }
+
+AMagTile::~AMagTile()
+{
+    // @TODO Release RuntimeMesh
+    
+    //    FRuntimeMeshVertexTypeRegistrationContainer::GetInstance().UnRegister(&VertexType::TypeInfo);
+    
+}
+
 
 // Called when the game starts or when spawned
 void AMagTile::BeginPlay()
@@ -32,6 +49,9 @@ void AMagTile::Tick(float DeltaTime)
 void AMagTile::OnConstruction(const FTransform& Transform)
 {
     CreateTileMesh(200);
+    
+    // @TODO create shared registry
+    
 }
 
 
@@ -75,5 +95,11 @@ void AMagTile::CreateTileMesh(float SideLength)
 
     // Create the mesh section specifying collision
     RuntimeMesh->CreateMeshSection(0, Vertices, Triangles, Normals, TextureCoordinates, TArray<FColor>(), Tangents, true, EUpdateFrequency::Infrequent);
+}
+
+FMagTileCore& FMagTileCore::GetInstance()
+{
+    static FMagTileCore Instance;
+    return Instance;
 }
 
