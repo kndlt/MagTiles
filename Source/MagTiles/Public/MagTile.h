@@ -75,7 +75,7 @@ private:
 class MAGTILES_API FMagTileGroup
 {
     // Vector of tiles
-    TArray<AMagTile> Tiles;
+    TArray<AMagTile*> Registration;
     // TMap<FMagTileLocation, FMagTileNode> Registrations;
 
 public:
@@ -86,9 +86,9 @@ public:
     
     // static FRuntimeMeshVertexTypeRegistrationContainer& GetInstance();
     
-    // void Register(const FRuntimeMeshVertexTypeInfo* InType);
+    void Register(const AMagTile* MagTile);
     
-    // void UnRegister(const FRuntimeMeshVertexTypeInfo* InType);
+    void Unregister(const AMagTile* MagTile);
     
     // const FRuntimeMeshVertexTypeInfo* GetVertexType(FGuid Key) const;
     

@@ -50,12 +50,15 @@ void AMagTile::OnConstruction(const FTransform& Transform)
 {
     CreateTileMesh(200);
     
-    //FMagTileCore MagTileCore = FMagTileCore::GetInstance();
+    FMagTileCore& MagTileCore = FMagTileCore::GetInstance();
     
     // @TODO Get the name of parent
-    //FString GroupKey = "**PARENT**";
+    FString GroupKey = "**PARENT**";
     
-    //FMagTileGroup MagTileGroup = MagTileCore.GetTileGroup(GroupKey);
+    FMagTileGroup& MagTileGroup = MagTileCore.GetTileGroup(GroupKey);
+    
+    // Add self
+    MagTileGroup.Register(this);
     
 }
 
@@ -109,6 +112,19 @@ FMagTileGroup::FMagTileGroup()
 FMagTileGroup::~FMagTileGroup()
 {
     GLog->Log("MagTiles: Removed a group.");
+}
+
+void FMagTileGroup::Register(const AMagTile* MagTile)
+{
+    GLog->Log("MagTiles: Registering a tile.");
+    check(MagTile);
+    // @TODO Add to registration
+}
+
+void FMagTileGroup::Unregister(const AMagTile* MagTile)
+{
+    GLog->Log("MagTiles: Unregistering a tile.");
+    // @TODO implement
 }
 
 FMagTileCore::FMagTileCore() {
