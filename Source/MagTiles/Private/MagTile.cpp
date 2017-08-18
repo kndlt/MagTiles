@@ -34,6 +34,11 @@ AMagTile::~AMagTile()
     
 }
 
+FIntVector AMagTile::ComputeKey(const AMagTile& MagTile)
+{
+    return FIntVector(0, 0, 0);
+}
+
 
 // Called when the game starts or when spawned
 void AMagTile::BeginPlay()
@@ -68,9 +73,9 @@ void AMagTile::OnConstruction(const FTransform& Transform)
     {
         if (PrevMagTileGroup) 
         {
-            PrevMagTileGroup->Unregister(this);
+            PrevMagTileGroup->Unregister(*this);
         }
-        MagTileGroup->Register(this);
+        MagTileGroup->Register(*this);
         PrevGroupKey = GroupKey;
     }
 }
@@ -129,14 +134,16 @@ FMagTileGroup::~FMagTileGroup()
     GLog->Log("MagTiles: Removed a group.");
 }
 
-void FMagTileGroup::Register(const AMagTile* MagTile)
+void FMagTileGroup::Register(const AMagTile& MagTile)
 {
     GLog->Log("MagTiles: Registering a tile.");
-    check(MagTile);
     // @TODO Add to registration
+
+    // Compute my location
+    FIntVector MagTileKey = AMagTile::ComputeKey(MagTile);
 }
 
-void FMagTileGroup::Unregister(const AMagTile* MagTile)
+void FMagTileGroup::Unregister(const AMagTile& MagTile)
 {
     GLog->Log("MagTiles: Unregistering a tile.");
     // @TODO implement

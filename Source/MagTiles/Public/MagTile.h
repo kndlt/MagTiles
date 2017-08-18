@@ -27,8 +27,9 @@ protected:
 public:	
 
     UPROPERTY(EditAnywhere)
-    
     URuntimeMeshComponent* RuntimeMesh;
+
+    static FIntVector ComputeKey(const AMagTile& MagTile);
 
     AMagTile();
     
@@ -67,8 +68,8 @@ struct MAGTILES_API FMagTileNode
  */
 class MAGTILES_API FMagTileGroup
 {
-    //  tiles
-    TMap<FIntPoint, FMagTileNode> Registration;
+    //  tiles <<row, col, size>, tile linked list> (assume size is int for V1)
+    TMap<FIntVector, FMagTileNode> Registration;
 
 public:
     
@@ -78,9 +79,9 @@ public:
     
     // static FRuntimeMeshVertexTypeRegistrationContainer& GetInstance();
     
-    void Register(const AMagTile* MagTile);
+    void Register(const AMagTile& MagTile);
     
-    void Unregister(const AMagTile* MagTile);
+    void Unregister(const AMagTile& MagTile);
     
     // const FRuntimeMeshVertexTypeInfo* GetVertexType(FGuid Key) const;
     
