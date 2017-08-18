@@ -29,7 +29,20 @@ public:
     UPROPERTY(EditAnywhere)
     URuntimeMeshComponent* RuntimeMesh;
 
-    static FIntVector ComputeKey(const AMagTile& MagTile);
+    FIntVector GetLocKey() const {
+        USceneComponent* RootComponent = this->GetRootComponent();
+        FVector Location = RootComponent->GetRelativeTransform().GetLocation();
+        // @TODO get int size arguments.
+        int32 size = 200;
+        float sizeInFloat = size;
+        // i, j, size
+        FIntVector LocKey(
+            size != 0 ? (int) (Location.X / sizeInFloat + 0.5f) : 0,
+            size != 0 ? (int) (Location.Y / sizeInFloat + 0.5f) : 0,
+            size
+        );
+        return LocKey;
+    }
 
     AMagTile();
     

@@ -34,12 +34,6 @@ AMagTile::~AMagTile()
     
 }
 
-FIntVector AMagTile::ComputeKey(const AMagTile& MagTile)
-{
-    return FIntVector(0, 0, 0);
-}
-
-
 // Called when the game starts or when spawned
 void AMagTile::BeginPlay()
 {
@@ -140,7 +134,7 @@ void FMagTileGroup::Register(const AMagTile& MagTile)
     // @TODO Add to registration
 
     // Compute my location
-    FIntVector MagTileKey = AMagTile::ComputeKey(MagTile);
+    FIntVector MagTileKey = MagTile.GetLocKey();
 }
 
 void FMagTileGroup::Unregister(const AMagTile& MagTile)
