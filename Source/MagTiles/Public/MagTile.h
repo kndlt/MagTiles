@@ -53,23 +53,14 @@ public:
 
 
 
-
-/**
- * Tile index location
- */
-//struct MAGTILES_API FMagTileLocation
-//{
-//    const int64 i, j;
-//};
-
 /**
  * Linked list node for MagTiles
  */
-//struct MAGTILES_API FMagTileNode
-//{
-//    const AMagTile* value;
-//    const FMagTileNode* next;
-//};
+struct MAGTILES_API FMagTileNode
+{
+    const AMagTile* value;
+    const FMagTileNode* next;
+};
 
 /**
  * Tile groups
@@ -77,7 +68,7 @@ public:
 class MAGTILES_API FMagTileGroup
 {
     //  tiles
-    TMap<TPair<int32, int32>, AMagTile> Registration;
+    TMap<FIntPoint, FMagTileNode> Registration;
 
 public:
     
