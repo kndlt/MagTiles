@@ -11,6 +11,19 @@ class MAGTILES_API AMagTile : public AActor
 {
 	GENERATED_BODY()
 
+    // Prev Group Key
+    uint32 PrevGroupKey;
+
+    void OnConstruction(const FTransform& Transform) override;
+
+    // Helper to generate a tile mesh
+    void CreateTileMesh(float SideLength);
+
+protected:
+
+    // Called when the game starts or when spawned
+    virtual void BeginPlay() override;
+
 public:	
 
     UPROPERTY(EditAnywhere)
@@ -24,17 +37,6 @@ public:
     // Called every frame
     virtual void Tick(float DeltaTime) override;
 
-protected:
-    
-	// Called when the game starts or when spawned
-	virtual void BeginPlay() override;
-
-private:
-    void OnConstruction(const FTransform& Transform) override;
-
-    // Helper to generate a tile mesh
-    void CreateTileMesh(float SideLength);
-	
 	
 };
 
@@ -74,9 +76,8 @@ private:
  */
 class MAGTILES_API FMagTileGroup
 {
-    // Vector of tiles
-    TArray<AMagTile*> Registration;
-    // TMap<FMagTileLocation, FMagTileNode> Registrations;
+    //  tiles
+    TMap<TPair<int32, int32>, AMagTile> Registration;
 
 public:
     
@@ -109,7 +110,7 @@ public:
     
     FMagTileCore();
     
-    FMagTileGroup& GetTileGroup(uint32 Key);
+    FMagTileGroup* GetTileGroup(uint32 Key);
     
     // Automatically called when a new MagTile (first out of all siblings)
     // is registered.

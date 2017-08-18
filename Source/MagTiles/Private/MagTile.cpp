@@ -5,7 +5,8 @@
 
 
 
-AMagTile::AMagTile()
+AMagTile::AMagTile() :
+    PrevGroupKey(0)
 {
     // Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
     PrimaryActorTick.bCanEverTick = true;
@@ -26,6 +27,8 @@ AMagTile::AMagTile()
 AMagTile::~AMagTile()
 {
     // @TODO Release RuntimeMesh
+
+    // @TODO Release cache and trigger update of neighboring tiles
     
     //    FRuntimeMeshVertexTypeRegistrationContainer::GetInstance().UnRegister(&VertexType::TypeInfo);
     
@@ -48,30 +51,28 @@ void AMagTile::Tick(float DeltaTime)
 
 void AMagTile::OnConstruction(const FTransform& Transform)
 {
-    uint32 GroupKey;
-
     CreateTileMesh(200);
     
     FMagTileCore& MagTileCore = FMagTileCore::GetInstance();
-    
-    // @TODO Get the name of parent
     USceneComponent* RootComponent = this->GetRootComponent();
     USceneComponent* ParentComponent = RootComponent->GetAttachParent();
-    
-    if (ParentComponent) {
-        GroupKey = ParentComponent->GetUniqueID();
-    }
-    else {
-        GroupKey = 0;
-    }
+    uint32 GroupKey = ParentComponent ? ParentComponent->GetUniqueID() : -1;
+    FMagTileGroup* MagTileGroup = MagTileCore.GetTileGroup(GroupKey);
+    FMagTileGroup* PrevMagTileGroup = PrevGroupKey ? MagTileCore.GetTileGroup(PrevGroupKey) : nullptr;
 
     GLog->Log(FString("MagTiles: Group key is ") + FString::FromInt(GroupKey));
 
-    FMagTileGroup& MagTileGroup = MagTileCore.GetTileGroup(GroupKey);
-    
-    // Add self
-    MagTileGroup.Register(this);
-    
+    // @TODO Remove from previous parent component
+
+    if (PrevMagTileGroup != MagTileGroup) 
+    {
+        if (PrevMagTileGroup) 
+        {
+            PrevMagTileGroup->Unregister(this);
+        }
+        MagTileGroup->Register(this);
+        PrevGroupKey = GroupKey;
+    }
 }
 
 
@@ -118,7 +119,7 @@ void AMagTile::CreateTileMesh(float SideLength)
     RuntimeMesh->CreateMeshSection(0, Vertices, Triangles, Normals, TextureCoordinates, TArray<FColor>(), Tangents, true, EUpdateFrequency::Infrequent);
 }
 
-FMagTileGroup::FMagTileGroup()
+FMagTileGroup::FMagTileGroup() 
 {
     GLog->Log("MagTiles: Created a new group.");
 }
@@ -151,15 +152,13 @@ FMagTileCore& FMagTileCore::GetInstance()
     return Instance;
 }
 
-FMagTileGroup& FMagTileCore::GetTileGroup(uint32 Key)
+FMagTileGroup* FMagTileCore::GetTileGroup(uint32 Key)
 {
-    // return *(new FMagTileGroup());
     FMagTileGroup* MagTileGroup = MagTileGroups.Find(Key);
     if (!MagTileGroup)
     {
         MagTileGroup = new FMagTileGroup();
         MagTileGroups.Add(Key, *MagTileGroup);
     }
-    return *MagTileGroup;
-    //return *(new FMagTileGroup());
+    return MagTileGroup;
 }
