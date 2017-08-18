@@ -74,6 +74,8 @@ void AMagTile::OnConstruction(const FTransform& Transform)
     
 }
 
+
+
 void AMagTile::CreateTileMesh(float SideLength)
 {
     TArray<FVector> Vertices;
@@ -153,12 +155,10 @@ FMagTileGroup& FMagTileCore::GetTileGroup(uint32 Key)
 {
     // return *(new FMagTileGroup());
     FMagTileGroup* MagTileGroup = MagTileGroups.Find(Key);
-    if (MagTileGroup == nullptr)
+    if (!MagTileGroup)
     {
         MagTileGroup = new FMagTileGroup();
-        
-        // @TODO Fix error on this line MemoryOps
-        // MagTileGroups.Add(Key, *MagTileGroup);
+        MagTileGroups.Add(Key, *MagTileGroup);
     }
     return *MagTileGroup;
     //return *(new FMagTileGroup());
