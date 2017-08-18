@@ -101,7 +101,7 @@ class MAGTILES_API FMagTileCore
 {
     
     // Parent ID -> group
-    TMap<FString, FMagTileGroup> MagTileGroups;
+    TMap<uint32, FMagTileGroup> MagTileGroups;
     
 public:
     
@@ -109,7 +109,7 @@ public:
     
     FMagTileCore();
     
-    FMagTileGroup& GetTileGroup(FString Key);
+    FMagTileGroup& GetTileGroup(uint32 Key);
     
     // Automatically called when a new MagTile (first out of all siblings)
     // is registered.

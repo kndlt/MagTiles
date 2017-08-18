@@ -48,13 +48,25 @@ void AMagTile::Tick(float DeltaTime)
 
 void AMagTile::OnConstruction(const FTransform& Transform)
 {
+    uint32 GroupKey;
+
     CreateTileMesh(200);
     
     FMagTileCore& MagTileCore = FMagTileCore::GetInstance();
     
     // @TODO Get the name of parent
-    FString GroupKey = "**PARENT**";
+    USceneComponent* RootComponent = this->GetRootComponent();
+    USceneComponent* ParentComponent = RootComponent->GetAttachParent();
     
+    if (ParentComponent) {
+        GroupKey = ParentComponent->GetUniqueID();
+    }
+    else {
+        GroupKey = 0;
+    }
+
+    GLog->Log(FString("MagTiles: Group key is ") + FString::FromInt(GroupKey));
+
     FMagTileGroup& MagTileGroup = MagTileCore.GetTileGroup(GroupKey);
     
     // Add self
@@ -137,7 +149,7 @@ FMagTileCore& FMagTileCore::GetInstance()
     return Instance;
 }
 
-FMagTileGroup& FMagTileCore::GetTileGroup(FString Key)
+FMagTileGroup& FMagTileCore::GetTileGroup(uint32 Key)
 {
     // return *(new FMagTileGroup());
     FMagTileGroup* MagTileGroup = MagTileGroups.Find(Key);
