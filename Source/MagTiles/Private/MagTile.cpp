@@ -47,7 +47,11 @@ void AMagTile::Tick(float DeltaTime)
     Super::Tick(DeltaTime);
 
 }
-
+/**
+ * Construction script
+ *
+ * @TODO Recovery logic for inconsistent state.
+ */
 void AMagTile::OnConstruction(const FTransform& Transform)
 {
     CreateTileMesh(200);
@@ -61,17 +65,28 @@ void AMagTile::OnConstruction(const FTransform& Transform)
 
     GLog->Log(FString("MagTiles: Group key is ") + FString::FromInt(GroupKey));
 
-    // @TODO Remove from previous parent component
-
-    if (PrevMagTileGroup != MagTileGroup) 
+    // Remove from previous group (remove even prev group is same as new group)
+    if (PrevMagTileGroup)
     {
-        if (PrevMagTileGroup) 
-        {
-            PrevMagTileGroup->Unregister(*this);
+        PrevMagTileGroup->Unregister(*this);
+        if (PrevMagTileGroup->IsEmpty()) {
+            MagTileCore.UnregisterTileGroup(PrevGroupKey);
         }
-        MagTileGroup->Register(*this);
-        PrevGroupKey = GroupKey;
     }
+
+    // Update previous group key
+    PrevGroupKey = GroupKey;
+
+    // Create a group if not found.
+    if (!MagTileGroup) 
+    {
+        MagTileGroup = new FMagTileGroup();
+        MagTileCore.RegisterTileGroup(GroupKey, *MagTileGroup);
+    }
+
+    // Add to the group
+    MagTileGroup->Register(*this);
+    
 }
 
 
@@ -136,10 +151,15 @@ void FMagTileGroup::Register(const AMagTile& MagTile)
     // Compute my location
     FIntVector LocKey = MagTile.GetLocKey();
 
-    //UE_LOG(MagTiles,Log,TEXT("MagTile's Location is %s and LocKey is %s"),
-    //    MagTile.GetRootComponent()->GetRelativeTransform().GetLocation().ToString(),
-    //    LocKey.ToString()
-    //);
+    UE_LOG(MagTiles, Log, TEXT("MagTile's Location is determined."));
+
+    UE_LOG(
+        MagTiles,
+        Log,
+        TEXT("MagTile's Location is %s and LocKey is %s"), 
+        *(MagTile.GetRootComponent()->GetRelativeTransform().GetLocation().ToString()),
+        *(LocKey.ToString())
+    );
 }
 
 void FMagTileGroup::Unregister(const AMagTile& MagTile)
@@ -161,10 +181,20 @@ FMagTileCore& FMagTileCore::GetInstance()
 FMagTileGroup* FMagTileCore::GetTileGroup(uint32 Key)
 {
     FMagTileGroup* MagTileGroup = MagTileGroups.Find(Key);
-    if (!MagTileGroup)
-    {
-        MagTileGroup = new FMagTileGroup();
-        MagTileGroups.Add(Key, *MagTileGroup);
-    }
+    //if (!MagTileGroup)
+    //{
+    //    MagTileGroup = new FMagTileGroup();
+    //    MagTileGroups.Add(Key, *MagTileGroup);
+    //}
     return MagTileGroup;
+}
+
+void FMagTileCore::RegisterTileGroup(uint32 Key, const FMagTileGroup& MagTileGroup)
+{
+    MagTileGroups.Add(Key, MagTileGroup);
+}
+
+void FMagTileCore::UnregisterTileGroup(uint32 key)
+{
+    MagTileGroups.Remove(key);
 }

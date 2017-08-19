@@ -5,8 +5,6 @@
 #include "Modules/ModuleManager.h"
 #include "RuntimeMeshComponent.h"
 
-DECLARE_LOG_CATEGORY_EXTERN(MagTiles, Log, All);
-
 /**
  * The public interface to this module
  */

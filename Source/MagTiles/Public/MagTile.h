@@ -37,8 +37,8 @@ public:
         float sizeInFloat = size;
         // i, j, size
         FIntVector LocKey(
-            size != 0 ? (int) (Location.X / sizeInFloat + 0.5f) : 0,
-            size != 0 ? (int) (Location.Y / sizeInFloat + 0.5f) : 0,
+            (size != 0 ? (int) (Location.X / sizeInFloat + 0.5f) : 0),
+            (size != 0 ? (int) (Location.Y / sizeInFloat + 0.5f) : 0),
             size
         );
         return LocKey;
@@ -95,6 +95,10 @@ public:
     void Register(const AMagTile& MagTile);
     
     void Unregister(const AMagTile& MagTile);
+
+    bool IsEmpty() {
+        return Registration.Num() == 0;
+    }
     
     // const FRuntimeMeshVertexTypeInfo* GetVertexType(FGuid Key) const;
     
@@ -116,6 +120,10 @@ public:
     FMagTileCore();
     
     FMagTileGroup* GetTileGroup(uint32 Key);
+
+    void RegisterTileGroup(uint32 Key, const FMagTileGroup& MagTileGroup);
+
+    void UnregisterTileGroup(uint32 Key);
     
     // Automatically called when a new MagTile (first out of all siblings)
     // is registered.
