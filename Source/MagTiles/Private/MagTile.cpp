@@ -134,7 +134,12 @@ void FMagTileGroup::Register(const AMagTile& MagTile)
     // @TODO Add to registration
 
     // Compute my location
-    FIntVector MagTileKey = MagTile.GetLocKey();
+    FIntVector LocKey = MagTile.GetLocKey();
+
+    //UE_LOG(MagTiles,Log,TEXT("MagTile's Location is %s and LocKey is %s"),
+    //    MagTile.GetRootComponent()->GetRelativeTransform().GetLocation().ToString(),
+    //    LocKey.ToString()
+    //);
 }
 
 void FMagTileGroup::Unregister(const AMagTile& MagTile)
