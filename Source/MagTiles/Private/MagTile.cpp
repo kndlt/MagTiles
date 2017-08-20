@@ -21,7 +21,7 @@ AMagTile::AMagTile() :
     // with same grid size and same grid offset (epsilon testing)
     // @TODO MagTileGroups
     //     FRuntimeMeshVertexTypeRegistrationContainer::GetInstance().Register(&VertexType::TypeInfo);
-    
+    GLog->Log("MagTiles: Created MagTile.");
 }
 
 AMagTile::~AMagTile()
@@ -31,7 +31,20 @@ AMagTile::~AMagTile()
     // @TODO Release cache and trigger update of neighboring tiles
     
     //    FRuntimeMeshVertexTypeRegistrationContainer::GetInstance().UnRegister(&VertexType::TypeInfo);
-    
+    GLog->Log("MagTiles: Deleted MagTile.");
+
+    // Remove from previous group (remove even prev group is same as new group)
+    FMagTileCore& MagTileCore = FMagTileCore::GetInstance();
+    FMagTileGroup* PrevMagTileGroup = PrevGroupKey ? MagTileCore.GetTileGroup(PrevGroupKey) : nullptr;
+
+    if (PrevMagTileGroup)
+    {
+        PrevMagTileGroup->Unregister(*this);
+        if (PrevMagTileGroup->IsEmpty()) {
+            MagTileCore.UnregisterTileGroup(PrevGroupKey);
+        }
+    }
+
 }
 
 // Called when the game starts or when spawned
@@ -47,6 +60,7 @@ void AMagTile::Tick(float DeltaTime)
     Super::Tick(DeltaTime);
 
 }
+
 /**
  * Construction script
  *
@@ -159,7 +173,6 @@ FMagTileGroup::~FMagTileGroup()
 void FMagTileGroup::Register(const AMagTile& MagTile)
 {
     GLog->Log("MagTiles: Registering a tile.");
-    // @TODO Add to registration
 
     // Compute my location
     FIntVector LocKey = MagTile.GetLocKey();
@@ -208,7 +221,38 @@ void FMagTileGroup::Register(const AMagTile& MagTile)
 void FMagTileGroup::Unregister(const AMagTile& MagTile)
 {
     GLog->Log("MagTiles: Unregistering a tile.");
-    // @TODO implement
+
+    // Compute my location
+    FIntVector LocKey = MagTile.GetLocKey();
+
+    // Get top most tile
+    FMagTileNode* MagTileHead = Registration.Find(LocKey);
+    
+    // Remove
+    FMagTileNode* MagTileCursor = MagTileHead;
+    FMagTileNode* MagTilePrev = nullptr;
+    while (MagTileCursor) {
+        // Found
+        if (MagTileCursor->value == &MagTile) {
+            if (MagTilePrev) {
+                MagTilePrev->next = MagTileCursor->next;
+            }
+            else {
+                MagTileHead = MagTileCursor->next;
+            }
+            break;
+        }
+        MagTilePrev = MagTileCursor;
+        MagTileCursor = MagTileCursor->next;
+    }
+
+    // If any remaining, update the head.
+    if (MagTileHead) {
+        Registration.Add(LocKey, *MagTileHead);
+    }
+    else {
+        Registration.Remove(LocKey);
+    }
 }
 
 FMagTileCore::FMagTileCore() {
