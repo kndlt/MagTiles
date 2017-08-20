@@ -11,11 +11,38 @@ class MAGTILES_API AMagTile : public AActor
 {
 	GENERATED_BODY()
 
+    // Prev Group Key
+    uint32 PrevGroupKey;
+
+    void OnConstruction(const FTransform& Transform) override;
+
+    // Helper to generate a tile mesh
+    void CreateTileMesh(float SideLength);
+
+protected:
+
+    // Called when the game starts or when spawned
+    virtual void BeginPlay() override;
+
 public:	
 
     UPROPERTY(EditAnywhere)
-    
     URuntimeMeshComponent* RuntimeMesh;
+
+    FIntVector GetLocKey() const {
+        USceneComponent* RootComponent = this->GetRootComponent();
+        FVector Location = RootComponent->GetRelativeTransform().GetLocation();
+        // @TODO get int size arguments.
+        int32 size = 200;
+        float sizeInFloat = size;
+        // i, j, size
+        FIntVector LocKey(
+            (size != 0 ? (int) (Location.X / sizeInFloat + 0.5f) : 0),
+            (size != 0 ? (int) (Location.Y / sizeInFloat + 0.5f) : 0),
+            size
+        );
+        return LocKey;
+    }
 
     AMagTile();
     
@@ -24,17 +51,6 @@ public:
     // Called every frame
     virtual void Tick(float DeltaTime) override;
 
-protected:
-    
-	// Called when the game starts or when spawned
-	virtual void BeginPlay() override;
-
-private:
-    void OnConstruction(const FTransform& Transform) override;
-
-    // Helper to generate a tile mesh
-    void CreateTileMesh(float SideLength);
-	
 	
 };
 
@@ -51,22 +67,15 @@ private:
 
 
 
-
-/**
- * Tile index location
- */
-struct MAGTILES_API FMagTileLocation
-{
-    const int64 i, j;
-};
-
 /**
  * Linked list node for MagTiles
  */
 struct MAGTILES_API FMagTileNode
 {
     const AMagTile* value;
-    const FMagTileNode* next;
+    FMagTileNode* next;
+    FMagTileNode(const AMagTile* value, FMagTileNode* next = nullptr);
+    ~FMagTileNode();
 };
 
 /**
@@ -74,15 +83,24 @@ struct MAGTILES_API FMagTileNode
  */
 class MAGTILES_API FMagTileGroup
 {
-    // TMap<FMagTileLocation, FMagTileNode> Registrations;
+    //  tiles <<row, col, size>, tile linked list> (assume size is int for V1)
+    TMap<FIntVector, FMagTileNode> Registration;
 
-// public:
+public:
+    
+    FMagTileGroup();
+    
+    ~FMagTileGroup();
     
     // static FRuntimeMeshVertexTypeRegistrationContainer& GetInstance();
     
-    // void Register(const FRuntimeMeshVertexTypeInfo* InType);
+    void Register(const AMagTile& MagTile);
     
-    // void UnRegister(const FRuntimeMeshVertexTypeInfo* InType);
+    void Unregister(const AMagTile& MagTile);
+
+    bool IsEmpty() {
+        return Registration.Num() == 0;
+    }
     
     // const FRuntimeMeshVertexTypeInfo* GetVertexType(FGuid Key) const;
     
@@ -94,11 +112,22 @@ class MAGTILES_API FMagTileGroup
 class MAGTILES_API FMagTileCore
 {
     
+    // Parent ID -> group
+    TMap<uint32, FMagTileGroup> MagTileGroups;
+    
 public:
     
     static FMagTileCore& GetInstance();
+
+    FMagTileCore();
+
+    ~FMagTileCore();
     
-    // TMap<FGuid, FMagTileGroup> MagTileGroups;
+    FMagTileGroup* GetTileGroup(uint32 Key);
+
+    void RegisterTileGroup(uint32 Key, const FMagTileGroup& MagTileGroup);
+
+    void UnregisterTileGroup(uint32 Key);
     
     // Automatically called when a new MagTile (first out of all siblings)
     // is registered.

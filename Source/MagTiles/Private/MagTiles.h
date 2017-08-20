@@ -13,3 +13,5 @@
 #include "RuntimeMeshLibrary.h"
 //#include "PhysicsEngine/BodySetup.h"
 
+DECLARE_LOG_CATEGORY_EXTERN(MagTiles, Log, All);
+
