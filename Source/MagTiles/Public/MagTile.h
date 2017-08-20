@@ -73,7 +73,9 @@ public:
 struct MAGTILES_API FMagTileNode
 {
     const AMagTile* value;
-    const FMagTileNode* next;
+    FMagTileNode* next;
+    FMagTileNode(const AMagTile* value, FMagTileNode* next = nullptr);
+    ~FMagTileNode();
 };
 
 /**
@@ -116,8 +118,10 @@ class MAGTILES_API FMagTileCore
 public:
     
     static FMagTileCore& GetInstance();
-    
+
     FMagTileCore();
+
+    ~FMagTileCore();
     
     FMagTileGroup* GetTileGroup(uint32 Key);
 
