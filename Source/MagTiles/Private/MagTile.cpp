@@ -203,9 +203,7 @@ void FMagTileGroup::Register(const AMagTile& MagTile)
     // No previous elements
     if (!MagTileHead)
     {
-        FMagTileNode NewMagTileHead(&MagTile);
         MagTileHead = new FMagTileNode(&MagTile);
-        Registration.Add(LocKey, NewMagTileHead);
     }
     // Max heap push
     else {
@@ -228,43 +226,49 @@ void FMagTileGroup::Register(const AMagTile& MagTile)
             MagTilePrev = MagTileCursor;
             MagTileCursor = MagTileCursor->next;
         }
-        Registration.Add(LocKey, *MagTileHead);
     }
+    Registration.Add(LocKey, *MagTileHead);
+    RegistrationKeys.Add(MagTile.GetUniqueID(), LocKey);
 }
 
 void FMagTileGroup::Unregister(const AMagTile& MagTile)
 {
     GLog->Log("MagTiles: Unregistering a tile.");
 
-    // @TODO Should iterate over the map and pluck it out instead.
+    // Find my previously assigned key
+    FIntVector* LocKey = RegistrationKeys.Find(MagTile.GetUniqueID());
 
-    // Get top most tile
-    FMagTileNode* MagTileHead = Registration.Find(LocKey);
-    
-    // Remove
-    FMagTileNode* MagTileCursor = MagTileHead;
-    FMagTileNode* MagTilePrev = nullptr;
-    while (MagTileCursor) {
-        // Found
-        if (MagTileCursor->value == &MagTile) {
-            if (MagTilePrev) {
-                MagTilePrev->next = MagTileCursor->next;
+    if (LocKey)
+    {
+        // Get top most tile
+        FMagTileNode* MagTileHead = Registration.Find(*LocKey);
+
+        // Remove
+        FMagTileNode* MagTileCursor = MagTileHead;
+        FMagTileNode* MagTilePrev = nullptr;
+        while (MagTileCursor) {
+            // Found
+            if (MagTileCursor->value == &MagTile) {
+                if (MagTilePrev) {
+                    MagTilePrev->next = MagTileCursor->next;
+                }
+                else {
+                    MagTileHead = MagTileCursor->next;
+                }
+                break;
             }
-            else {
-                MagTileHead = MagTileCursor->next;
-            }
-            break;
+            MagTilePrev = MagTileCursor;
+            MagTileCursor = MagTileCursor->next;
         }
-        MagTilePrev = MagTileCursor;
-        MagTileCursor = MagTileCursor->next;
-    }
 
-    // If any remaining, update the head.
-    if (MagTileHead) {
-        Registration.Add(LocKey, *MagTileHead);
-    }
-    else {
-        Registration.Remove(LocKey);
+        // If any remaining, update the head.
+        if (MagTileHead) {
+            Registration.Add(*LocKey, *MagTileHead);
+        }
+        else {
+            Registration.Remove(*LocKey);
+        }
+        RegistrationKeys.Remove(MagTile.GetUniqueID());
     }
 }
 
