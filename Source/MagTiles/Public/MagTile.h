@@ -59,8 +59,8 @@ public:
 // No rotation is supported, no scaling is supported for individual tiles, but as a hiearchy yes.
 // Any MagTiles which are siblings will be somehow linked together.
 // Most likely is that there will be a common registry for the GUID,
-// So in C++ code we need a map <FGuid, UMagTileGroup>
-// and each UMagTileGroup will have a tile registry of map <<int,int>,<AMagTile>>.
+// So in C++ code we need a map <FGuid, FMagTileGroup>
+// and each FMagTileGroup will have a tile registry of map <<int,int>,<AMagTile>>.
 // if the tile does not conform to the location, we can either SNAP, or mark it red.
 // I like the idea of dimensional snapping.
 // All grid will have no offset as parent element can be trnasformed.
@@ -88,20 +88,18 @@ struct MAGTILES_API FMagTileNode
 /**
  * Tile groups
  */
-UCLASS()
-class MAGTILES_API UMagTileGroup : public UObject
+USTRUCT()
+struct MAGTILES_API FMagTileGroup
 {
-    GENERATED_BODY()
+    GENERATED_USTRUCT_BODY()
 
     //  tiles <<row, col, size>, tile linked list> (assume size is int for V1)
     UPROPERTY()
     TMap<FIntVector, FMagTileNode> Registration;
 
-public:
+    FMagTileGroup();
     
-    UMagTileGroup();
-    
-    ~UMagTileGroup();
+    ~FMagTileGroup();
     
     // static FRuntimeMeshVertexTypeRegistrationContainer& GetInstance();
     
@@ -120,26 +118,24 @@ public:
 /**
  * MagTile Global
  */
-UCLASS()
-class MAGTILES_API UMagTileCore : public UObject
+USTRUCT()
+struct MAGTILES_API FMagTileCore
 {
     GENERATED_BODY()
     
     // Parent ID -> group
     UPROPERTY()
-    TMap<uint32, UMagTileGroup*> MagTileGroups;
+    TMap<uint32, FMagTileGroup> MagTileGroups;
     
-public:
+    static FMagTileCore& GetInstance();
+
+    FMagTileCore();
+
+    ~FMagTileCore();
     
-    static UMagTileCore& GetInstance();
+    FMagTileGroup* GetTileGroup(uint32 Key);
 
-    UMagTileCore();
-
-    ~UMagTileCore();
-    
-    UMagTileGroup* GetTileGroup(uint32 Key);
-
-    void RegisterTileGroup(uint32 Key, const UMagTileGroup& MagTileGroup);
+    void RegisterTileGroup(uint32 Key, const FMagTileGroup& MagTileGroup);
 
     void UnregisterTileGroup(uint32 Key);
     
