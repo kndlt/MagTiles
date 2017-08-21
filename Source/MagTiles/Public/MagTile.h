@@ -51,7 +51,6 @@ public:
     // Called every frame
     virtual void Tick(float DeltaTime) override;
 
-	
 };
 
 
@@ -75,6 +74,8 @@ struct MAGTILES_API FMagTileNode
 {
     GENERATED_USTRUCT_BODY()
 
+
+    // @TODO Need to use uint32 UniqueID
     UPROPERTY()
     const AMagTile* value;
 
@@ -96,6 +97,10 @@ struct MAGTILES_API FMagTileGroup
     //  tiles <<row, col, size>, tile linked list> (assume size is int for V1)
     UPROPERTY()
     TMap<FIntVector, FMagTileNode> Registration;
+
+    // GUID -> Keys
+    UPROPERTY()
+    TMap<uint32, FIntVector> RegistrationKeys;
 
     FMagTileGroup();
     
