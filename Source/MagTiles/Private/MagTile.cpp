@@ -95,12 +95,14 @@ void AMagTile::OnConstruction(const FTransform& Transform)
     // Create a group if not found.
     if (!MagTileGroup) 
     {
-        MagTileGroup = new FMagTileGroup();
-        MagTileCore.RegisterTileGroup(GroupKey, *MagTileGroup);
+        FMagTileGroup NewMagTileGroup;
+        NewMagTileGroup.Register(*this);
+        MagTileCore.RegisterTileGroup(GroupKey, NewMagTileGroup);
     }
-
     // Add to the group
-    MagTileGroup->Register(*this);
+    else {
+        MagTileGroup->Register(*this);
+    }
 
     GLog->Log("MagTiles: Huh?");
 
@@ -201,7 +203,9 @@ void FMagTileGroup::Register(const AMagTile& MagTile)
     // No previous elements
     if (!MagTileHead)
     {
+        FMagTileNode NewMagTileHead(&MagTile);
         MagTileHead = new FMagTileNode(&MagTile);
+        Registration.Add(LocKey, NewMagTileHead);
     }
     // Max heap push
     else {
@@ -224,18 +228,15 @@ void FMagTileGroup::Register(const AMagTile& MagTile)
             MagTilePrev = MagTileCursor;
             MagTileCursor = MagTileCursor->next;
         }
+        Registration.Add(LocKey, *MagTileHead);
     }
-
-    // @TODO This is not getting persisted
-    Registration.Add(LocKey, *MagTileHead);
 }
 
 void FMagTileGroup::Unregister(const AMagTile& MagTile)
 {
     GLog->Log("MagTiles: Unregistering a tile.");
 
-    // Compute my location
-    FIntVector LocKey = MagTile.GetLocKey();
+    // @TODO Should iterate over the map and pluck it out instead.
 
     // Get top most tile
     FMagTileNode* MagTileHead = Registration.Find(LocKey);
