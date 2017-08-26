@@ -35,7 +35,7 @@ AMagTile::~AMagTile()
 
     // Remove from previous group (remove even prev group is same as new group)
     FMagTileCore& MagTileCore = FMagTileCore::GetInstance();
-    FMagTileGroup* PrevMagTileGroup = PrevGroupKey ? MagTileCore.GetTileGroup(PrevGroupKey) : nullptr;
+    FMagTileGroup* PrevMagTileGroup = PrevGroupKey ? MagTileCore.FindTileGroup(PrevGroupKey) : nullptr;
 
     if (PrevMagTileGroup)
     {
@@ -73,7 +73,7 @@ void AMagTile::OnConstruction(const FTransform& Transform)
     FMagTileCore& MagTileCore = FMagTileCore::GetInstance();
     USceneComponent* RootComponent = this->GetRootComponent();
     USceneComponent* ParentComponent = RootComponent->GetAttachParent();
-    FMagTileGroup* PrevMagTileGroup = PrevGroupKey ? MagTileCore.GetTileGroup(PrevGroupKey) : nullptr;
+    FMagTileGroup* PrevMagTileGroup = PrevGroupKey ? MagTileCore.FindTileGroup(PrevGroupKey) : nullptr;
 
     // Remove from previous group (remove even prev group is same as new group)
     if (PrevMagTileGroup)
@@ -86,23 +86,21 @@ void AMagTile::OnConstruction(const FTransform& Transform)
 
     // Get new tile group.
     uint32 GroupKey = ParentComponent ? ParentComponent->GetUniqueID() : 0xffffffff;
-    FMagTileGroup* MagTileGroup = MagTileCore.GetTileGroup(GroupKey);
+    FMagTileGroup* MagTileGroup = MagTileCore.FindTileGroup(GroupKey);
+
+    if (!MagTileGroup) {
+        MagTileGroup = new FMagTileGroup();
+        MagTileCore.RegisterTileGroup(GroupKey, *MagTileGroup);
+    }
+
     GLog->Log(FString("MagTiles: Group key is ") + FString::FromInt(GroupKey));
 
     // Update previous group key
     PrevGroupKey = GroupKey;
 
-    // Create a group if not found.
-    if (!MagTileGroup) 
-    {
-        FMagTileGroup NewMagTileGroup;
-        NewMagTileGroup.Register(*this);
-        MagTileCore.RegisterTileGroup(GroupKey, NewMagTileGroup);
-    }
     // Add to the group
-    else {
-        MagTileGroup->Register(*this);
-    }
+    MagTileGroup->Register(*this);
+    
 
     GLog->Log("MagTiles: Huh?");
 
@@ -153,36 +151,6 @@ void AMagTile::CreateTileMesh(float SideLength)
     RuntimeMesh->CreateMeshSection(0, Vertices, Triangles, Normals, TextureCoordinates, TArray<FColor>(), Tangents, true, EUpdateFrequency::Infrequent);
 }
 
-
-FMagTileNode::FMagTileNode() :
-    value(nullptr),
-    next(nullptr)
-{
-    GLog->Log("MagTiles: Created a new node.");
-}
-
-// Default for next is nullptr
-FMagTileNode::FMagTileNode(const AMagTile* value, FMagTileNode* next) :
-    value(value),
-    next(next)
-{
-    GLog->Log("MagTiles: Created a new node.");
-}
-
-FMagTileNode::~FMagTileNode() {
-    GLog->Log("MagTiles: Deleted a node.");
-}
-
-FMagTileGroup::FMagTileGroup() 
-{
-    GLog->Log("MagTiles: Created a new group.");
-}
-
-FMagTileGroup::~FMagTileGroup()
-{
-    GLog->Log("MagTiles: Removed a group.");
-}
-
 void FMagTileGroup::Register(const AMagTile& MagTile)
 {
     GLog->Log("MagTiles: Registering a tile.");
@@ -190,35 +158,31 @@ void FMagTileGroup::Register(const AMagTile& MagTile)
     // Compute my location
     FIntVector LocKey = MagTile.GetLocKey();
 
-    UE_LOG(
-        MagTiles,
-        Log,
-        TEXT("MagTile's Location is %s and LocKey is %s"), 
-        *(MagTile.GetRootComponent()->GetRelativeTransform().GetLocation().ToString()),
-        *(LocKey.ToString())
-    );
-
+    UE_LOG(MagTiles, Log, TEXT("MagTile's Location is %s and LocKey is %s"), *(MagTile.GetRootComponent()->GetRelativeTransform().GetLocation().ToString()), *(LocKey.ToString()));
+    
     FMagTileNode* MagTileHead = Registration.Find(LocKey);
+
+    float NewTileHeight = MagTile.GetRootComponent()->GetRelativeTransform().GetLocation().Z;
 
     // No previous elements
     if (!MagTileHead)
     {
-        MagTileHead = new FMagTileNode(&MagTile);
+        FMagTileNode NewMagTileHead(MagTile.GetUniqueID(), NewTileHeight, nullptr);
+        Registration.Add(LocKey, NewMagTileHead);
     }
     // Max heap push
     else {
         FMagTileNode* MagTileCursor = MagTileHead;
         FMagTileNode* MagTilePrev = nullptr;
         while (MagTileCursor) {
-            float CursorTileHeight = MagTileCursor->value->GetRootComponent()->GetRelativeTransform().GetLocation().Z;
-            float NewTileHeight = MagTile.GetRootComponent()->GetRelativeTransform().GetLocation().Z;
-
+            float CursorTileHeight = MagTileCursor->height;
+            
             if (NewTileHeight >= CursorTileHeight) {
                 if (MagTilePrev) {
-                    MagTilePrev->next = new FMagTileNode(&MagTile, MagTileCursor);
+                    MagTilePrev->next = new FMagTileNode(MagTile.GetUniqueID(), NewTileHeight, MagTileCursor);
                 }
                 else {
-                    MagTileHead = new FMagTileNode(&MagTile, MagTileCursor);
+                    MagTileHead = new FMagTileNode(MagTile.GetUniqueID(), NewTileHeight, MagTileCursor);
                 }
                 // This is very important!
                 break;
@@ -226,8 +190,9 @@ void FMagTileGroup::Register(const AMagTile& MagTile)
             MagTilePrev = MagTileCursor;
             MagTileCursor = MagTileCursor->next;
         }
+        Registration.Add(LocKey, *MagTileHead);
     }
-    Registration.Add(LocKey, *MagTileHead);
+
     RegistrationKeys.Add(MagTile.GetUniqueID(), LocKey);
 }
 
@@ -248,7 +213,7 @@ void FMagTileGroup::Unregister(const AMagTile& MagTile)
         FMagTileNode* MagTilePrev = nullptr;
         while (MagTileCursor) {
             // Found
-            if (MagTileCursor->value == &MagTile) {
+            if (MagTileCursor->value == MagTile.GetUniqueID()) {
                 if (MagTilePrev) {
                     MagTilePrev->next = MagTileCursor->next;
                 }
@@ -272,34 +237,3 @@ void FMagTileGroup::Unregister(const AMagTile& MagTile)
     }
 }
 
-FMagTileCore::FMagTileCore() {
-    GLog->Log("MagTiles: Core initialized.");
-}
-
-FMagTileCore::~FMagTileCore() {
-    GLog->Log("MagTiles: Core destroyed.");
-}
-
-FMagTileCore& FMagTileCore::GetInstance()
-{
-    static FMagTileCore Instance;
-    return Instance;
-}
-
-FMagTileGroup* FMagTileCore::GetTileGroup(uint32 Key)
-{
-    FMagTileGroup* MagTileGroup = MagTileGroups.Find(Key);
-    return MagTileGroup;
-}
-
-void FMagTileCore::RegisterTileGroup(uint32 Key, const FMagTileGroup& MagTileGroup)
-{
-    GLog->Log("MagTiles: Tile group registered.");
-    MagTileGroups.Add(Key, MagTileGroup);
-}
-
-void FMagTileCore::UnregisterTileGroup(uint32 key)
-{
-    GLog->Log("MagTiles: Tile group unregistered.");
-    MagTileGroups.Remove(key);
-}

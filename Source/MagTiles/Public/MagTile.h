@@ -12,7 +12,7 @@ class MAGTILES_API AMagTile : public AActor
 	GENERATED_BODY()
 
     // Prev Group Key
-    uint32 PrevGroupKey;
+    uint32 PrevGroupKey = 0xffffffff;
 
     void OnConstruction(const FTransform& Transform) override;
 
@@ -77,13 +77,34 @@ struct MAGTILES_API FMagTileNode
 
     // @TODO Need to use uint32 UniqueID
     UPROPERTY()
-    const AMagTile* value;
+    uint32 value;
+
+    UPROPERTY()
+    float height;
 
     FMagTileNode* next;
 
-    FMagTileNode();
-    FMagTileNode(const AMagTile* value, FMagTileNode* next = nullptr);
-    ~FMagTileNode();
+    // @TODO Default value does not make sense.
+    FMagTileNode() :
+        value(0),
+        height(0),
+        next(nullptr)
+    {
+        GLog->Log("MagTiles: Created a new node.");
+    }
+
+    FMagTileNode(const uint32 value, const float height, FMagTileNode* next = nullptr) :
+        value(value),
+        height(height),
+        next(next)
+    {
+        GLog->Log("MagTiles: Created a new node.");
+    }
+
+    ~FMagTileNode()
+    {
+        GLog->Log("MagTiles: Deleted a node.");
+    }
 };
 
 /**
@@ -102,22 +123,23 @@ struct MAGTILES_API FMagTileGroup
     UPROPERTY()
     TMap<uint32, FIntVector> RegistrationKeys;
 
-    FMagTileGroup();
+    FMagTileGroup()
+    {
+        GLog->Log("MagTiles: Created a new group.");
+    }
     
-    ~FMagTileGroup();
-    
-    // static FRuntimeMeshVertexTypeRegistrationContainer& GetInstance();
-    
+    ~FMagTileGroup()
+    {
+        GLog->Log("MagTiles: Removed a group.");
+    }
+        
     void Register(const AMagTile& MagTile);
     
     void Unregister(const AMagTile& MagTile);
 
     bool IsEmpty() {
         return Registration.Num() == 0;
-    }
-    
-    // const FRuntimeMeshVertexTypeInfo* GetVertexType(FGuid Key) const;
-    
+    }    
 };
 
 /**
@@ -131,18 +153,44 @@ struct MAGTILES_API FMagTileCore
     // Parent ID -> group
     UPROPERTY()
     TMap<uint32, FMagTileGroup> MagTileGroups;
-    
-    static FMagTileCore& GetInstance();
 
-    FMagTileCore();
+    static FMagTileCore& GetInstance()
+    {
+        static FMagTileCore Instance;
+        return Instance;
+    }
 
-    ~FMagTileCore();
-    
-    FMagTileGroup* GetTileGroup(uint32 Key);
+    FMagTileCore()
+    {
+        GLog->Log("MagTiles: Core initialized.");
+    }
 
-    void RegisterTileGroup(uint32 Key, const FMagTileGroup& MagTileGroup);
+    ~FMagTileCore()
+    {
+        GLog->Log("MagTiles: Core destroyed.");
+    }
 
-    void UnregisterTileGroup(uint32 Key);
+    FMagTileGroup* FindTileGroup(uint32 Key) 
+    {
+        return MagTileGroups.Find(Key);
+    }
+
+    FMagTileGroup& FindOrAddTileGroup(uint32 Key)
+    {
+        return MagTileGroups.FindOrAdd(Key);
+    }
+
+    void RegisterTileGroup(uint32 Key, const FMagTileGroup& MagTileGroup)
+    {
+        GLog->Log("MagTiles: Tile group registered.");
+        MagTileGroups.Add(Key, MagTileGroup);
+    }
+
+    void UnregisterTileGroup(uint32 Key)
+    {
+        GLog->Log("MagTiles: Tile group unregistered.");
+        MagTileGroups.Remove(Key);
+    }
     
     // Automatically called when a new MagTile (first out of all siblings)
     // is registered.
@@ -151,6 +199,3 @@ struct MAGTILES_API FMagTileCore
     // Unregistered when Reference count hits zero.
     // Unregister()
 };
-
-
-
