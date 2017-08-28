@@ -24,14 +24,14 @@ AMagTile::AMagTile() :
     GLog->Log("MagTiles: Created MagTile.");
 }
 
-AMagTile::~AMagTile()
+void AMagTile::BeginDestroy()
 {
     // @TODO Release RuntimeMesh
 
     // @TODO Release cache and trigger update of neighboring tiles
     
     //    FRuntimeMeshVertexTypeRegistrationContainer::GetInstance().UnRegister(&VertexType::TypeInfo);
-    GLog->Log("MagTiles: Deleted MagTile.");
+    GLog->Log("MagTiles: Beginning to delete a MagTile.");
 
     // Remove from previous group (remove even prev group is same as new group)
     FMagTileCore& MagTileCore = FMagTileCore::GetInstance();
@@ -40,6 +40,7 @@ AMagTile::~AMagTile()
     if (PrevMagTileGroup)
     {
         PrevMagTileGroup->Unregister(*this);
+        MagTileCore.RegisterTileGroup(PrevGroupKey, *PrevMagTileGroup);
         if (PrevMagTileGroup->IsEmpty()) {
             MagTileCore.UnregisterTileGroup(PrevGroupKey);
         }
@@ -73,12 +74,14 @@ void AMagTile::OnConstruction(const FTransform& Transform)
     FMagTileCore& MagTileCore = FMagTileCore::GetInstance();
     USceneComponent* RootComponent = this->GetRootComponent();
     USceneComponent* ParentComponent = RootComponent->GetAttachParent();
+    // @TODO Why is this empty?
     FMagTileGroup* PrevMagTileGroup = PrevGroupKey ? MagTileCore.FindTileGroup(PrevGroupKey) : nullptr;
 
     // Remove from previous group (remove even prev group is same as new group)
     if (PrevMagTileGroup)
     {
         PrevMagTileGroup->Unregister(*this);
+        MagTileCore.RegisterTileGroup(PrevGroupKey, *PrevMagTileGroup);
         if (PrevMagTileGroup->IsEmpty()) {
             MagTileCore.UnregisterTileGroup(PrevGroupKey);
         }
@@ -86,11 +89,12 @@ void AMagTile::OnConstruction(const FTransform& Transform)
 
     // Get new tile group.
     uint32 GroupKey = ParentComponent ? ParentComponent->GetUniqueID() : 0xffffffff;
+
+    // @TODO Why is this removing a group?
     FMagTileGroup* MagTileGroup = MagTileCore.FindTileGroup(GroupKey);
 
     if (!MagTileGroup) {
         MagTileGroup = new FMagTileGroup();
-        MagTileCore.RegisterTileGroup(GroupKey, *MagTileGroup);
     }
 
     GLog->Log(FString("MagTiles: Group key is ") + FString::FromInt(GroupKey));
@@ -100,7 +104,11 @@ void AMagTile::OnConstruction(const FTransform& Transform)
 
     // Add to the group
     MagTileGroup->Register(*this);
+
+    // Have to do this at the end. Why????
+    MagTileCore.RegisterTileGroup(GroupKey, *MagTileGroup);
     
+    UE_LOG(MagTiles, Log, TEXT("MagTileCore verification: %d"), MagTileCore.FindTileGroup(GroupKey)->Registration.Num());
 
     GLog->Log("MagTiles: Huh?");
 
@@ -167,8 +175,8 @@ void FMagTileGroup::Register(const AMagTile& MagTile)
     // No previous elements
     if (!MagTileHead)
     {
-        FMagTileNode NewMagTileHead(MagTile.GetUniqueID(), NewTileHeight, nullptr);
-        Registration.Add(LocKey, NewMagTileHead);
+        FMagTileNode* NewMagTileHead = new FMagTileNode(MagTile.GetUniqueID(), NewTileHeight, nullptr);
+        Registration.Add(LocKey, *NewMagTileHead);
     }
     // Max heap push
     else {

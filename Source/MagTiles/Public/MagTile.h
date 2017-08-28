@@ -46,7 +46,8 @@ public:
 
     AMagTile();
     
-    ~AMagTile();
+    // ~AMagTile();
+    virtual void BeginDestroy();
     
     // Called every frame
     virtual void Tick(float DeltaTime) override;
